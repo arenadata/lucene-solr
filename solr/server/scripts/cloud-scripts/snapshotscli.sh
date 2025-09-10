@@ -3,15 +3,26 @@
 set -e
 
 run_solr_snapshot_tool() {
-  JVM="java"
+  if [ -z "$JAVA_HOME" ] && [ -r /usr/lib/bigtop-utils/bigtop-detect-javahome ]; then
+    . /usr/lib/bigtop-utils/bigtop-detect-javahome
+  fi
+
+  if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JVM="$JAVA_HOME/bin/java"
+  else
+    JVM="${JAVA:-java}"
+  fi
+
   scriptDir=$(dirname "$0")
   if [ -n "$LOG4J_PROPS" ]; then
     log4j_config="file:${LOG4J_PROPS}"
   else
     log4j_config="file:${scriptDir}/../../resources/log4j2-console.xml"
   fi
-  PATH=${JAVA_HOME}/bin:${PATH} ${JVM} ${ZKCLI_JVM_FLAGS} -Dlog4j.configurationFile=${log4j_config} \
-  -classpath "${solrLibPath}" org.apache.solr.core.snapshots.SolrSnapshotsTool "$@" 2> /dev/null
+  PATH="${JAVA_HOME:+$JAVA_HOME/bin:}$PATH" "$JVM" ${ZKCLI_JVM_FLAGS} \
+    -Dlog4j.configurationFile="${log4j_config}" \
+    -classpath "${solrLibPath}" \
+    org.apache.solr.core.snapshots.SolrSnapshotsTool "$@" 2>/dev/null
 }
 
 usage() {
