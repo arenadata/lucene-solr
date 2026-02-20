@@ -199,7 +199,12 @@ public class Replica extends ZkNodeProps {
   }
 
   public String getBaseUrl(){
-    return getStr(BASE_URL_PROP);
+    String baseUrl = getStr(BASE_URL_PROP);
+    if (baseUrl != null) {
+      return UrlScheme.INSTANCE.applyUrlScheme(baseUrl);
+    }
+    // fallback: compute from node_name if base_url is not stored (SOLR-12182)
+    return UrlScheme.INSTANCE.getBaseUrlForNodeName(nodeName);
   }
 
   /** SolrCore name. */
