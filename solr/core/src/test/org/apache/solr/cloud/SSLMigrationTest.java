@@ -19,7 +19,6 @@ package org.apache.solr.cloud;
   
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.util.LuceneTestCase.Slow;
-import org.apache.lucene.util.LuceneTestCase.AwaitsFix;
 import org.apache.solr.SolrTestCaseJ4.SuppressSSL;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -52,7 +51,6 @@ import static org.apache.solr.common.util.Utils.makeMap;
  */
 @Slow
 @SuppressSSL
-@AwaitsFix(bugUrl="https://issues.apache.org/jira/browse/SOLR-12028") // 17-Mar-2018
 public class SSLMigrationTest extends AbstractFullDistribZkTestBase {
 
   @Test
@@ -102,8 +100,8 @@ public class SSLMigrationTest extends AbstractFullDistribZkTestBase {
     List<Replica> replicas = getReplicas();
     assertEquals("Wrong number of replicas found", 4, replicas.size());
     for(Replica replica : replicas) {
-      assertTrue("Replica didn't have the proper urlScheme in the ClusterState",
-          StringUtils.startsWith(replica.getStr(ZkStateReader.BASE_URL_PROP), urlScheme));
+      assertTrue("Replica didn't have the proper urlScheme in the ClusterState: " + replica.getBaseUrl(),
+          StringUtils.startsWith(replica.getBaseUrl(), urlScheme));
     }
   }
   
