@@ -45,6 +45,7 @@ import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.common.cloud.UrlScheme;
 import org.apache.solr.common.cloud.ZkStateReader;
 import org.apache.solr.common.params.CoreAdminParams.CoreAdminAction;
 import org.apache.solr.util.SSLTestConfig;
@@ -90,12 +91,14 @@ public class TestMiniSolrCloudClusterSSL extends SolrTestCaseJ4 {
     HttpClientUtil.resetHttpClientBuilder(); // also resets SocketFactoryRegistryProvider
     Http2SolrClient.resetSslContextFactory();
     System.clearProperty(ZkStateReader.URL_SCHEME);
+    UrlScheme.INSTANCE.setUrlScheme("http");
   }
   @After
   public void after() {
     HttpClientUtil.resetHttpClientBuilder(); // also resets SocketFactoryRegistryProvider
     Http2SolrClient.resetSslContextFactory();
     System.clearProperty(ZkStateReader.URL_SCHEME);
+    UrlScheme.INSTANCE.setUrlScheme("http");
     SSLContext.setDefault(DEFAULT_SSL_CONTEXT);
   }
   

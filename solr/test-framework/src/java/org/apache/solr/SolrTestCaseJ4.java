@@ -107,6 +107,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.MultiMapSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.params.UpdateParams;
+import org.apache.solr.common.cloud.UrlScheme;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.ExecutorUtil;
@@ -165,6 +166,7 @@ import org.apache.commons.io.IOUtils;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.solr.cloud.SolrZkServer.ZK_WHITELIST_PROPERTY;
+import static org.apache.solr.common.cloud.ZkStateReader.HTTP;
 import static org.apache.solr.common.cloud.ZkStateReader.HTTPS;
 import static org.apache.solr.common.cloud.ZkStateReader.URL_SCHEME;
 import static org.apache.solr.update.processor.DistributedUpdateProcessor.DistribPhase;
@@ -320,6 +322,9 @@ public abstract class SolrTestCaseJ4 extends SolrTestCase {
       // SolrCloud tests should usually clear this
       System.setProperty(URL_SCHEME, HTTPS);
     }
+    // Ensure UrlScheme singleton matches current test's SSL config to avoid leaking
+    // state from a previous test suite that may have set it to "https" (see SOLR-12028)
+    UrlScheme.INSTANCE.setUrlScheme(isSSLMode() ? HTTPS : HTTP);
   }
 
   @AfterClass
@@ -359,6 +364,7 @@ public abstract class SolrTestCaseJ4 extends SolrTestCase {
       System.clearProperty("enable.update.log");
       System.clearProperty("useCompoundFile");
       System.clearProperty(URL_SCHEME);
+      UrlScheme.INSTANCE.setUrlScheme(HTTP);
       System.clearProperty("solr.cloud.wait-for-updates-with-stale-state-pause");
       System.clearProperty("solr.zkclienttmeout");
       System.clearProperty(ZK_WHITELIST_PROPERTY);
