@@ -87,6 +87,10 @@ public class InfoHandler extends RequestHandlerBase  {
   }
 
   private void handle(SolrQueryRequest req, SolrQueryResponse rsp, String path) {
+    // Strip trailing slashes to prevent handler lookup bypass (CVE-2026-22022)
+    while (path.length() > 1 && path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
     int i = path.lastIndexOf('/');
     String name = path.substring(i + 1, path.length());
     RequestHandlerBase handler = handlers.get(name.toLowerCase(Locale.ROOT));

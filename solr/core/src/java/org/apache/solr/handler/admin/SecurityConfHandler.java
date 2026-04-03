@@ -33,8 +33,10 @@ import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.util.Utils;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.handler.RequestHandlerBase;
 import org.apache.solr.handler.RequestHandlerUtils;
+import org.apache.solr.handler.SchemaHandler;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.security.AuthenticationPlugin;
@@ -62,13 +64,14 @@ public abstract class SecurityConfHandler extends RequestHandlerBase implements 
 
   @Override
   public PermissionNameProvider.Name getPermissionName(AuthorizationContext ctx) {
-    switch (ctx.getHttpMethod()) {
-      case "GET":
+    SolrRequest.METHOD method = SolrRequest.METHOD.fromString(ctx.getHttpMethod());
+    switch (method) {
+      case GET:
         return PermissionNameProvider.Name.SECURITY_READ_PERM;
-      case "POST":
+      case POST:
         return PermissionNameProvider.Name.SECURITY_EDIT_PERM;
       default:
-        return null;
+        throw SchemaHandler.getUnexpectedHttpMethodException(ctx.getHttpMethod());
     }
   }
 
