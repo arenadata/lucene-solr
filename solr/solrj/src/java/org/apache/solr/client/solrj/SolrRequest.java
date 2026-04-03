@@ -56,14 +56,26 @@ public abstract class SolrRequest<T extends SolrResponse> implements Serializabl
     GET,
     POST,
     PUT,
-    DELETE
+    DELETE,
+    HEAD;
+
+    public static METHOD fromString(String method) {
+      try {
+        return METHOD.valueOf(method);
+      } catch (IllegalArgumentException e) {
+        throw new org.apache.solr.common.SolrException(
+            org.apache.solr.common.SolrException.ErrorCode.BAD_REQUEST,
+            "Unexpected HTTP method: " + method);
+      }
+    }
   };
 
   public static final Set<String> SUPPORTED_METHODS = unmodifiableSet(new HashSet<>(Arrays.<String>asList(
       METHOD.GET.toString(),
       METHOD.POST.toString(),
       METHOD.PUT.toString(),
-      METHOD.DELETE.toString())));
+      METHOD.DELETE.toString(),
+      METHOD.HEAD.toString())));
 
   private METHOD method = METHOD.GET;
   private String path = null;

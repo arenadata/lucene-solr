@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
 
 import org.apache.solr.api.Api;
 import org.apache.solr.api.ApiBag;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.cloud.ZkSolrResourceLoader;
 import org.apache.solr.common.MapWriter;
 import org.apache.solr.common.SolrException;
@@ -82,39 +83,50 @@ public class SchemaHandler extends RequestHandlerBase implements SolrCoreAware, 
   public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp) throws Exception {
     RequestHandlerUtils.setWt(req, JSON);
     String httpMethod = (String) req.getContext().get("httpMethod");
-    if ("POST".equals(httpMethod)) {
-      if (isImmutableConfigSet) {
-        throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "ConfigSet is immutable");
-      }
-      if (req.getContentStreams() == null) {
-        throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "no stream");
-      }
+    SolrRequest.METHOD method = SolrRequest.METHOD.fromString(httpMethod);
+    switch (method) {
+      case POST:
+        if (isImmutableConfigSet) {
+          throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "ConfigSet is immutable");
+        }
+        if (req.getContentStreams() == null) {
+          throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "no stream");
+        }
 
-      try {
-        @SuppressWarnings({"rawtypes"})
-        List errs = new SchemaManager(req).performOperations();
-        if (!errs.isEmpty())
-          throw new ApiBag.ExceptionWithErrObject(SolrException.ErrorCode.BAD_REQUEST,"error processing commands", errs);
-      } catch (IOException e) {
-        throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Error reading input String " + e.getMessage(), e);
-      }
-    } else {
-      handleGET(req, rsp);
+        try {
+          @SuppressWarnings({"rawtypes"})
+          List errs = new SchemaManager(req).performOperations();
+          if (!errs.isEmpty())
+            throw new ApiBag.ExceptionWithErrObject(SolrException.ErrorCode.BAD_REQUEST,"error processing commands", errs);
+        } catch (IOException e) {
+          throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Error reading input String " + e.getMessage(), e);
+        }
+        break;
+      case GET:
+        handleGET(req, rsp);
+        break;
+      default:
+        throw getUnexpectedHttpMethodException(httpMethod);
     }
   }
 
   @Override
   public PermissionNameProvider.Name getPermissionName(AuthorizationContext ctx) {
-    switch (ctx.getHttpMethod()) {
-      case "GET":
+    SolrRequest.METHOD method = SolrRequest.METHOD.fromString(ctx.getHttpMethod());
+    switch (method) {
+      case GET:
         return PermissionNameProvider.Name.SCHEMA_READ_PERM;
-      case "PUT":
-      case "DELETE":
-      case "POST":
+      case PUT:
+      case DELETE:
+      case POST:
         return PermissionNameProvider.Name.SCHEMA_EDIT_PERM;
       default:
-        return null;
+        throw getUnexpectedHttpMethodException(ctx.getHttpMethod());
     }
+  }
+
+  public static SolrException getUnexpectedHttpMethodException(String methodName) {
+    return new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Unexpected HTTP method: " + methodName);
   }
 
   private void handleGET(SolrQueryRequest req, SolrQueryResponse rsp) {

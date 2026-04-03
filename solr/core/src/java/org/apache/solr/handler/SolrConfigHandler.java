@@ -131,19 +131,25 @@ public class SolrConfigHandler extends RequestHandlerBase implements SolrCoreAwa
 
     RequestHandlerUtils.setWt(req, CommonParams.JSON);
     String httpMethod = (String) req.getContext().get("httpMethod");
+    SolrRequest.METHOD method = SolrRequest.METHOD.fromString(httpMethod);
     Command command = new Command(req, rsp, httpMethod);
-    if ("POST".equals(httpMethod)) {
-      if (configEditing_disabled || isImmutableConfigSet) {
-        final String reason = configEditing_disabled ? "due to " + CONFIGSET_EDITING_DISABLED_ARG : "because ConfigSet is immutable";
-        throw new SolrException(SolrException.ErrorCode.FORBIDDEN, " solrconfig editing is not enabled " + reason);
-      }
-      try {
-        command.handlePOST();
-      } finally {
-        RequestHandlerUtils.addExperimentalFormatWarning(rsp);
-      }
-    } else {
-      command.handleGET();
+    switch (method) {
+      case POST:
+        if (configEditing_disabled || isImmutableConfigSet) {
+          final String reason = configEditing_disabled ? "due to " + CONFIGSET_EDITING_DISABLED_ARG : "because ConfigSet is immutable";
+          throw new SolrException(SolrException.ErrorCode.FORBIDDEN, " solrconfig editing is not enabled " + reason);
+        }
+        try {
+          command.handlePOST();
+        } finally {
+          RequestHandlerUtils.addExperimentalFormatWarning(rsp);
+        }
+        break;
+      case GET:
+        command.handleGET();
+        break;
+      default:
+        throw SchemaHandler.getUnexpectedHttpMethodException(httpMethod);
     }
   }
 
@@ -888,13 +894,14 @@ public class SolrConfigHandler extends RequestHandlerBase implements SolrCoreAwa
 
   @Override
   public Name getPermissionName(AuthorizationContext ctx) {
-    switch (ctx.getHttpMethod()) {
-      case "GET":
+    SolrRequest.METHOD method = SolrRequest.METHOD.fromString(ctx.getHttpMethod());
+    switch (method) {
+      case GET:
         return Name.CONFIG_READ_PERM;
-      case "POST":
+      case POST:
         return Name.CONFIG_EDIT_PERM;
       default:
-        return null;
+        throw SchemaHandler.getUnexpectedHttpMethodException(ctx.getHttpMethod());
     }
   }
 

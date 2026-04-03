@@ -38,6 +38,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.cloud.ZkController;
 import org.apache.solr.common.SolrException;
@@ -117,7 +118,7 @@ public final class ZookeeperInfoHandler extends RequestHandlerBase implements Pe
   @Override
   public PermissionNameProvider.Name getPermissionName(AuthorizationContext request) {
     SolrParams params = request.getParams();
-    String path = params.get(PATH, "");
+    String path = StringUtils.stripEnd(params.get(PATH, ""), "/");
     String detail = params.get(PARAM_DETAIL, "false");
     if ("/security.json".equalsIgnoreCase(path) && "true".equalsIgnoreCase(detail)) {
       return PermissionNameProvider.Name.SECURITY_READ_PERM;
