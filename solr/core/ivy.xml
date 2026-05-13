@@ -73,6 +73,8 @@
     <dependency org="org.apache.hadoop" name="hadoop-auth" rev="${/org.apache.hadoop/hadoop-auth}" conf="compile.hadoop"/>
     <dependency org="org.apache.hadoop" name="hadoop-common" rev="${/org.apache.hadoop/hadoop-common}" conf="compile.hadoop"/>
     <dependency org="org.apache.hadoop" name="hadoop-hdfs-client" rev="${/org.apache.hadoop/hadoop-hdfs-client}" conf="compile.hadoop"/>
+    <dependency org="org.apache.hadoop.thirdparty" name="hadoop-shaded-guava" rev="${/org.apache.hadoop.thirdparty/hadoop-shaded-guava}" conf="compile.hadoop"/>
+    <dependency org="org.apache.hadoop.thirdparty" name="hadoop-shaded-protobuf_3_25" rev="${/org.apache.hadoop.thirdparty/hadoop-shaded-protobuf_3_25}" conf="compile.hadoop"/>
     <!--
       hadoop-annotations is a runtime dependencies,
       so even though they are not compile-time dependencies, they are included
@@ -85,7 +87,6 @@
     <dependency org="com.github.ben-manes.caffeine" name="caffeine" rev="${/com.github.ben-manes.caffeine/caffeine}" conf="compile.hadoop"/>
     <dependency org="com.google.re2j" name="re2j" rev="${/com.google.re2j/re2j}" conf="compile"/>
     <dependency org="org.apache.commons" name="commons-lang3" rev="${/org.apache.commons/commons-lang3}" conf="compile.hadoop"/>
-    <dependency org="org.apache.htrace" name="htrace-core4" rev="${/org.apache.htrace/htrace-core4}" conf="compile.hadoop"/>
 
     <dependency org="org.apache.curator" name="curator-framework" rev="${/org.apache.curator/curator-framework}" conf="compile.hadoop"/>
     <dependency org="org.apache.curator" name="curator-client" rev="${/org.apache.curator/curator-client}" conf="compile.hadoop"/>
@@ -111,6 +112,8 @@
     <dependency org="com.sun.jersey" name="jersey-servlet" rev="${/com.sun.jersey/jersey-servlet}" conf="test.DfsMiniCluster"/>
     <dependency org="commons-logging" name="commons-logging" rev="${/commons-logging/commons-logging}" conf="test.DfsMiniCluster"/>
     <dependency org="io.netty" name="netty-all" rev="${/io.netty/netty-all}" conf="test.DfsMiniCluster"/>
+    <dependency org="io.netty" name="netty-codec-http" rev="${/io.netty/netty-codec-http}" conf="test.DfsMiniCluster"/>
+    <dependency org="io.netty" name="netty-codec-http2" rev="${/io.netty/netty-codec-http2}" conf="test.DfsMiniCluster"/>
     <dependency org="org.apache.commons" name="commons-compress" rev="${/org.apache.commons/commons-compress}" conf="test.DfsMiniCluster"/>
     <dependency org="org.apache.commons" name="commons-text" rev="${/org.apache.commons/commons-text}" conf="test.DfsMiniCluster"/>
 
