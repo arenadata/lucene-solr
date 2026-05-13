@@ -203,6 +203,28 @@
     </subant>
   </target>
 
+  <target name="stage-maven-artifacts-arenadata"
+          description="Deploy Lucene/Solr Maven artifacts to the arenadata GitHub Packages registry. Requires GITHUB_USERNAME and GITHUB_TOKEN env vars.">
+    <property environment="env"/>
+    <fail unless="env.GITHUB_USERNAME" message="GITHUB_USERNAME env var is required"/>
+    <fail unless="env.GITHUB_TOKEN" message="GITHUB_TOKEN env var is required"/>
+    <property name="maven.dist.dir" location="lucene/dist/maven"/>
+    <fail message="Run 'ant generate-maven-artifacts' first; ${maven.dist.dir} does not exist.">
+      <condition>
+        <not><available file="${maven.dist.dir}" type="dir"/></not>
+      </condition>
+    </fail>
+    <ant dir="lucene" target="stage-maven-artifacts" inheritall="false">
+      <property name="maven.dist.dir" location="${maven.dist.dir}"/>
+      <property name="m2.repository.id" value="arenadata-lucene-solr"/>
+      <property name="m2.repository.url" value="https://maven.pkg.github.com/arenadata/lucene-solr"/>
+      <property name="m2.credentials.prompt" value="props"/>
+      <property name="m2.repository.username" value="${env.GITHUB_USERNAME}"/>
+      <property name="m2.repository.password" value="${env.GITHUB_TOKEN}"/>
+      <propertyset refid="uptodate.and.compiled.properties"/>
+    </ant>
+  </target>
+
   <target name="-install-maven-artifacts" depends="resolve,resolve-groovy,resolve-markdown,install-maven-tasks">
     <ant dir="lucene" inheritall="false">
       <target name="-unpack-lucene-tgz"/>

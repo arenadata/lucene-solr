@@ -61,9 +61,9 @@
     </condition>
   </fail>
 
-  <fail message="If you pass -Dversion=... to set a release version, it must match &quot;${version.base}&quot;, optionally followed by a suffix (e.g., &quot;-SNAPSHOT&quot;).">
+  <fail message="If you pass -Dversion=... to set a release version, it must match &quot;${version.base}&quot;, optionally followed by a build identifier (e.g., &quot;-SNAPSHOT&quot; or &quot;.3-4.3.0-0&quot;).">
     <condition>
-      <not><matches pattern="^\Q${version.base}\E(|\-.*)$" casesensitive="true" string="${version}"/></not>
+      <not><matches pattern="^\Q${version.base}\E(\.\d+)?(|\-.*)$" casesensitive="true" string="${version}"/></not>
     </condition>
   </fail>
   
@@ -443,6 +443,10 @@
      <!-- [DW] ivy loses its configuration for some reason. cannot explain this. if
           you have an idea, fix it.
           unless="ivy.settings.uptodate" -->
+    <!-- Map environment variables to Ant properties for Ivy credentials -->
+    <property environment="env"/>
+    <property name="github.username" value="${env.GITHUB_USERNAME}"/>
+    <property name="github.token" value="${env.GITHUB_TOKEN}"/>
     <!-- override: just for safety, should be unnecessary -->
     <ivy:configure file="${common.dir}/top-level-ivy-settings.xml" override="true"/>
     <!-- <property name="ivy.settings.uptodate" value="true"/> -->
@@ -1917,9 +1921,13 @@ ${ant.project.name}.test.dependencies=${test.classpath.list}
       </fail>
     </sequential>
     <echo>Invoking target stage-maven in ${output.build.xml} now...</echo>
+    <property name="m2.repository.username" value=""/>
+    <property name="m2.repository.password" value=""/>
     <ant target="stage-maven" antfile="${output.build.xml}" inheritall="false">
       <property name="m2.repository.id" value="${m2.repository.id}"/>
       <property name="m2.repository.url" value="${m2.repository.url}"/>
+      <property name="m2.repository.username" value="${m2.repository.username}"/>
+      <property name="m2.repository.password" value="${m2.repository.password}"/>
     </ant>
   </target>
 

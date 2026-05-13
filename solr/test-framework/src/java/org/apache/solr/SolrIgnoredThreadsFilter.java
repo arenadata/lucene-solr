@@ -63,7 +63,19 @@ public class SolrIgnoredThreadsFilter implements ThreadFilter {
     if (threadName.startsWith("Log4j2-TF-2-AsyncLoggerConfig")) {
       return true;
     }
-    
+
+    // Hadoop 3.4.x threads that are not cleaned up on MiniDFSCluster shutdown
+    if (threadName.startsWith("SSL Certificates Store Monitor")) {
+      return true;
+    }
+    if (threadName.startsWith("GcTimeMonitor")) {
+      return true;
+    }
+
+    // Curator 5.9.x daemon thread that lingers after close
+    if (threadName.startsWith("Curator-SafeNotifyService")) {
+      return true;
+    }
 
     return false;
   }

@@ -29,22 +29,31 @@
   <include url="${ivy.default.settings.dir}/ivysettings-local.xml"/>
   <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml"/>
 
+  <credentials host="maven.pkg.github.com" realm="GitHub Package Registry"
+               username="${github.username}" passwd="${github.token}"/>
+
   <caches lockStrategy="${ivy.lock-strategy}" resolutionCacheDir="${ivy.resolution-cache.dir}" />
 
   <resolvers>
     <ibiblio name="sonatype-releases" root="https://oss.sonatype.org/content/repositories/releases" m2compatible="true" />
     <ibiblio name="releases.cloudera.com" root="https://repository.cloudera.com/artifactory/libs-release-local" m2compatible="true" />
+    <chain name="arenadata" returnFirst="true">
+      <ibiblio name="arenadata-zookeeper" root="https://maven.pkg.github.com/arenadata/zookeeper" m2compatible="true" />
+      <ibiblio name="arenadata-curator" root="https://maven.pkg.github.com/arenadata/curator" m2compatible="true" />
+      <ibiblio name="arenadata-hadoop" root="https://maven.pkg.github.com/arenadata/hadoop" m2compatible="true" />
+    </chain>
 
     <filesystem name="local-maven-2" m2compatible="true" local="true">
       <artifact
-          pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]" />
+          pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" />
       <ivy
           pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].pom" />
     </filesystem>
 
     <chain name="default" returnFirst="true" checkmodified="true" changingPattern=".*SNAPSHOT">
       <resolver ref="local"/>
-      <!-- <resolver ref="local-maven-2" /> -->
+      <resolver ref="local-maven-2" />
+      <resolver ref="arenadata"/>
       <resolver ref="main"/>
       <resolver ref="sonatype-releases" />
       <resolver ref="releases.cloudera.com"/>

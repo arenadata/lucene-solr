@@ -1576,7 +1576,7 @@ public class OverseerTest extends SolrTestCaseJ4 {
     long after = System.nanoTime();
     assertTrue(TimeUnit.NANOSECONDS.toMillis(after-before) > 50);
     assertTrue(TimeUnit.NANOSECONDS.toMillis(after-before) < 500);// Mostly to make sure the millis->nanos->millis is not broken
-    latch1.process(new WatchedEvent(new WatcherEvent(1, 1, "/foo/bar")));
+    latch1.process(new WatchedEvent(new WatcherEvent(1, 1, "/foo/bar"), 0L));
     before = System.nanoTime();
     latch1.await(10000);// Expecting no wait
     after = System.nanoTime();
@@ -1587,12 +1587,12 @@ public class OverseerTest extends SolrTestCaseJ4 {
     final OverseerTaskQueue.LatchWatcher latch2 = new OverseerTaskQueue.LatchWatcher(Event.EventType.NodeCreated);
     Thread t = new Thread(()->{
       //Process an event of a different type first, this shouldn't release the latch
-      latch2.process(new WatchedEvent(new WatcherEvent(Event.EventType.NodeDeleted.getIntValue(), 1, "/foo/bar")));
+      latch2.process(new WatchedEvent(new WatcherEvent(Event.EventType.NodeDeleted.getIntValue(), 1, "/foo/bar"), 0L));
 
       assertFalse("Latch shouldn't have been released", doneWaiting.get());
       // Now process the correct type of event
       expectedEventProcessed.set(true);
-      latch2.process(new WatchedEvent(new WatcherEvent(Event.EventType.NodeCreated.getIntValue(), 1, "/foo/bar")));
+      latch2.process(new WatchedEvent(new WatcherEvent(Event.EventType.NodeCreated.getIntValue(), 1, "/foo/bar"), 0L));
     });
     t.start();
     before = System.nanoTime();

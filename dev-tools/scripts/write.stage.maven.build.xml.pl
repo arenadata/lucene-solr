@@ -86,7 +86,14 @@ print $output_build_xml qq!<?xml version="1.0"?>
 !;
 
 my $credentials = '';
-if ($m2_credentials_prompt !~ /\A(?s:f(?:alse)?|no?)\z/) {
+my $credentials_block = q!<credentials>
+          <authentication username="${m2.repository.username}" password="${m2.repository.password}"/>
+        </credentials>!;
+if ($m2_credentials_prompt =~ /\A(?s:props?|env)\z/i) {
+  # Non-interactive: rely on m2.repository.username/password Ant properties
+  # (e.g. wired from GITHUB_USERNAME/GITHUB_TOKEN env vars by the caller).
+  $credentials = $credentials_block;
+} elsif ($m2_credentials_prompt !~ /\A(?s:f(?:alse)?|no?)\z/) {
   print $output_build_xml qq!
       <input message="Enter $m2_repository_id username: >" addproperty="m2.repository.username"/>
       <echo>WARNING: ON SOME PLATFORMS YOUR PASSPHRASE WILL BE ECHOED BACK\!\!\!\!\!</echo>
@@ -94,9 +101,7 @@ if ($m2_credentials_prompt !~ /\A(?s:f(?:alse)?|no?)\z/) {
         <handler type="secure"/>
       </input>\n!;
 
-  $credentials = q!<credentials>
-          <authentication username="${m2.repository.username}" password="${m2.repository.password}"/>
-        </credentials>!;
+  $credentials = $credentials_block;
 }
 
 for my $basepath (@basepaths) {
@@ -135,46 +140,44 @@ sub find_poms {
   }
 }
 
+sub attach_if_exists {
+  my ($file, $attrs) = @_;
+  return '' unless -f $file;
+  return qq!          <attach file="$file" $attrs/>\n!;
+}
+
 sub output_deploy_stanza {
   my $basepath = shift;
   my $pom_file = "$basepath.pom";
   my $jar_file = "$basepath.jar";
   my $war_file = "$basepath.war";
 
+  my $attachments = '';
+  my $deploy_attrs = qq!pom.xml="${pom_file}"!;
+
   if (-f $war_file) {
-    print $output_build_xml qq!
-      <m2-deploy pom.xml="${pom_file}" jar.file="${war_file}">
-        $parent_pom_targets
-        <artifact-attachments>
-          <attach file="${pom_file}.asc" type="pom.asc"/>
-          <attach file="${war_file}.asc" type="war.asc"/>
-        </artifact-attachments>
-        $credentials
-      </m2-deploy>\n!;
+    $deploy_attrs .= qq! jar.file="${war_file}"!;
+    $attachments .= attach_if_exists("${pom_file}.asc", 'type="pom.asc"');
+    $attachments .= attach_if_exists("${war_file}.asc", 'type="war.asc"');
   } elsif (-f $jar_file) {
-    print $output_build_xml qq!
-      <m2-deploy pom.xml="${pom_file}" jar.file="${jar_file}">
-        $parent_pom_targets
-        <artifact-attachments>
-          <attach file="${basepath}-sources.jar" classifier="sources"/>
-          <attach file="${basepath}-javadoc.jar" classifier="javadoc"/>
-          <attach file="${pom_file}.asc" type="pom.asc"/>
-          <attach file="${jar_file}.asc" type="jar.asc"/>
-          <attach file="${basepath}-sources.jar.asc" classifier="sources" type="jar.asc"/>
-          <attach file="${basepath}-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
-        </artifact-attachments>
-        $credentials
-      </m2-deploy>\n!;
+    $deploy_attrs .= qq! jar.file="${jar_file}"!;
+    $attachments .= attach_if_exists("${basepath}-sources.jar", 'classifier="sources"');
+    $attachments .= attach_if_exists("${basepath}-javadoc.jar", 'classifier="javadoc"');
+    $attachments .= attach_if_exists("${pom_file}.asc", 'type="pom.asc"');
+    $attachments .= attach_if_exists("${jar_file}.asc", 'type="jar.asc"');
+    $attachments .= attach_if_exists("${basepath}-sources.jar.asc", 'classifier="sources" type="jar.asc"');
+    $attachments .= attach_if_exists("${basepath}-javadoc.jar.asc", 'classifier="javadoc" type="jar.asc"');
   } else {
-    print $output_build_xml qq!
-      <m2-deploy pom.xml="${pom_file}">
+    $attachments .= attach_if_exists("${pom_file}.asc", 'type="pom.asc"');
+  }
+
+  print $output_build_xml qq!
+      <m2-deploy $deploy_attrs>
         $parent_pom_targets
         <artifact-attachments>
-          <attach file="${pom_file}.asc" type="pom.asc"/>
-        </artifact-attachments>
+$attachments        </artifact-attachments>
         $credentials
       </m2-deploy>\n!;
-  }
 
   ++$num_artifacts;
 }
