@@ -536,6 +536,7 @@
                             **/classes/ **/*.sh **/ivy.xml **/build.xml
                             **/bin/ **/*.iml **/*.ipr **/*.iws **/pom.xml
                             **/*pom.xml.template server/etc/test/ contrib/**/src/
+                            contrib/extraction/**
                             contrib/analysis-extras/lib/opennlp-tools-*.jar
                             contrib/langid/lib/opennlp-tools-*.jar
                             licenses/opennlp-tools-*" />
@@ -553,7 +554,8 @@
                   includes="dist/*.jar
                             dist/solrj-lib/*
                             dist/test-framework/**"
-                  excludes="**/*.tgz **/*.zip **/*.md5 **/*src*.jar **/*docs*.jar **/*.sha1 **/*.sha512" />
+                  excludes="**/*.tgz **/*.zip **/*.md5 **/*src*.jar **/*docs*.jar **/*.sha1 **/*.sha512
+                            dist/solr-cell-*.jar" />
       <tarfileset dir="${javadoc-online.dir}"
                   prefix="${fullnamever}/docs" />
     </tar>
