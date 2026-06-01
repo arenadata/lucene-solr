@@ -532,13 +532,18 @@
                   includes="LICENSE.txt NOTICE.txt CHANGES.txt README.txt SYSTEM_REQUIREMENTS.txt
                             bin/** server/** example/** contrib/**/lib/** contrib/**/conf/** contrib/**/README.txt
                             licenses/**"
-                  excludes="licenses/README.committers.txt **/data/ **/logs/* 
+                  excludes="licenses/README.committers.txt **/data/ **/logs/*
                             **/classes/ **/*.sh **/ivy.xml **/build.xml
-                            **/bin/ **/*.iml **/*.ipr **/*.iws **/pom.xml 
-                            **/*pom.xml.template server/etc/test/ contrib/**/src/" />
+                            **/bin/ **/*.iml **/*.ipr **/*.iws **/pom.xml
+                            **/*pom.xml.template server/etc/test/ contrib/**/src/
+                            contrib/extraction/**
+                            contrib/analysis-extras/lib/opennlp-tools-*.jar
+                            contrib/langid/lib/opennlp-tools-*.jar
+                            licenses/opennlp-tools-*" />
       <tarfileset dir="${dest}/contrib-lucene-libs-to-package"
                   prefix="${fullnamever}"
-                  includes="**" />
+                  includes="**"
+                  excludes="**/lucene-analyzers-opennlp-*.jar" />
       <tarfileset dir="."
                   filemode="755"
                   prefix="${fullnamever}"
@@ -549,7 +554,8 @@
                   includes="dist/*.jar
                             dist/solrj-lib/*
                             dist/test-framework/**"
-                  excludes="**/*.tgz **/*.zip **/*.md5 **/*src*.jar **/*docs*.jar **/*.sha1 **/*.sha512" />
+                  excludes="**/*.tgz **/*.zip **/*.md5 **/*src*.jar **/*docs*.jar **/*.sha1 **/*.sha512
+                            dist/solr-cell-*.jar" />
       <tarfileset dir="${javadoc-online.dir}"
                   prefix="${fullnamever}/docs" />
     </tar>

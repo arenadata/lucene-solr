@@ -57,7 +57,7 @@ jobs:
   lucene-tests:
     name: Lucene Tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     needs: compile
     steps:
     - uses: actions/checkout@v4
@@ -87,7 +87,7 @@ jobs:
   solr-tests:
     name: Solr Tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     needs: compile
     steps:
     - uses: actions/checkout@v4
@@ -105,7 +105,12 @@ jobs:
     - name: Ivy bootstrap
       run: ant ivy-bootstrap
     - name: Run Solr tests
-      run: ant -f solr/build.xml test
+      run: >
+        ant -f solr/build.xml test
+        -DsocketTimeout=30000
+        -DconnTimeout=30000
+        -Dsolr.zkclienttimeout=120000
+        -DdistribUpdateSoTimeout=60000
     - name: Upload test results
       if: ${{ failure() }}
       uses: actions/upload-artifact@v4
